@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 from deebot_client.command import InitParam
 from deebot_client.events import FanSpeedEvent, FanSpeedLevel
 from deebot_client.message import HandlingResult
+from deebot_client.util import get_enum
 
 from .common import XmlGetCommand, XmlSetCommand
 
@@ -54,6 +55,6 @@ class SetCleanSpeed(XmlSetCommand):
     _mqtt_params = MappingProxyType({"speed": InitParam(FanSpeedLevel)})
 
     def __init__(self, speed: FanSpeedLevel | str) -> None:
-        if isinstance(speed, FanSpeedLevel):
-            speed = speed.xml_value
-        super().__init__({"speed": speed})
+        if isinstance(speed, str):
+            speed = get_enum(FanSpeedLevel, speed)
+        super().__init__({"speed": speed.xml_value})
