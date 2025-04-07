@@ -24,7 +24,7 @@ class XmlMessage(MessageStr, ABC):
 
         :return: A message response
         """
-        xml = ET.fromstring(message) # noqa: S314
+        xml = ET.fromstring(message)  # noqa: S314
         return cls._handle_xml(event_bus, xml)
 
     @classmethod

@@ -28,5 +28,7 @@ class WaterBoxInfo(XmlMessage):
         if (on := xml.attrib.get("on")) is None:
             return HandlingResult.analyse()
 
-        event_bus.notify(WaterInfoEvent(amount=WaterAmount.HIGH, mop_attached=on != "0"))
+        event_bus.notify(
+            WaterInfoEvent(amount=WaterAmount.HIGH, mop_attached=on != "0")
+        )
         return HandlingResult.success()

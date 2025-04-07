@@ -46,9 +46,9 @@ class Device:
     """Device representation."""
 
     def __init__(
-            self,
-            device_info: DeviceInfo,
-            authenticator: Authenticator,
+        self,
+        device_info: DeviceInfo,
+        authenticator: Authenticator,
     ) -> None:
         self._device_info = device_info
         self.device_info: Final = device_info.api
@@ -78,8 +78,8 @@ class Device:
             if deebot:
                 on_charger = filter(
                     lambda p: p.type == PositionType.CHARGER
-                              and p.x == deebot.x
-                              and p.y == deebot.y,
+                    and p.x == deebot.x
+                    and p.y == deebot.y,
                     event.positions,
                 )
                 if on_charger:
@@ -146,12 +146,12 @@ class Device:
     async def _available_task_worker(self) -> None:
         while True:
             if (datetime.now() - self._last_time_available).total_seconds() > (
-                    _AVAILABLE_CHECK_INTERVAL - 1
+                _AVAILABLE_CHECK_INTERVAL - 1
             ):
                 tasks: set[asyncio.Future[Any]] = set()
                 try:
                     for command in self.capabilities.get_refresh_commands(
-                            AvailabilityEvent
+                        AvailabilityEvent
                     ):
                         tasks.add(asyncio.create_task(self._execute_command(command)))
 
@@ -166,8 +166,8 @@ class Device:
             await asyncio.sleep(_AVAILABLE_CHECK_INTERVAL)
 
     async def _execute_command(
-            self,
-            command: Command,
+        self,
+        command: Command,
     ) -> DeviceCommandResult:
         """Execute given command."""
         async with self._semaphore:
@@ -187,7 +187,7 @@ class Device:
         self.events.notify(AvailabilityEvent(available=available))
 
     def _handle_message(
-            self, message_name: str, message_data: str | bytes | bytearray | dict[str, Any]
+        self, message_name: str, message_data: str | bytes | bytearray | dict[str, Any]
     ) -> None:
         """Handle the given message.
 
@@ -215,7 +215,9 @@ class Device:
                 else:
                     msg = "Unsupported message data type {message_name}: {message_type}"
                     raise TypeError(
-                        msg.format(message_name=message_name, message_type=type(message_data))
+                        msg.format(
+                            message_name=message_name, message_type=type(message_data)
+                        )
                     )
 
                 if isinstance(data, dict):

@@ -21,7 +21,7 @@ __all__ = [
     "CleanSt",
     "MapP",
     "Pos",
-    "WaterBoxInfo"
+    "WaterBoxInfo",
 ]
 # fmt: off
 # ordered by file asc

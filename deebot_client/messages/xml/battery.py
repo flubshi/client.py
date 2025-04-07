@@ -25,10 +25,9 @@ class BatteryInfo(XmlMessage):
 
         :return: A message response
         """
-        if (
-                (battery := xml.find("battery")) is None
-                or (power := battery.attrib.get("power")) is None
-        ):
+        if (battery := xml.find("battery")) is None or (
+            power := battery.attrib.get("power")
+        ) is None:
             return HandlingResult.analyse()
 
         if power:

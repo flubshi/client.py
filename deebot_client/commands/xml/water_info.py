@@ -25,7 +25,7 @@ class GetWaterPermeability(XmlGetCommand):
 
     @classmethod
     def handle_set_args(
-            cls, event_bus: EventBus, args: dict[str, Any]
+        cls, event_bus: EventBus, args: dict[str, Any]
     ) -> HandlingResult:
         """Handle message->body->data and notify the correct event subscribers.
 
@@ -54,13 +54,17 @@ class GetWaterBoxInfo(XmlGetCommand):
 
     @classmethod
     def handle_set_args(
-            cls, event_bus: EventBus, args: dict[str, Any]
+        cls, event_bus: EventBus, args: dict[str, Any]
     ) -> HandlingResult:
         """Handle message->body->data and notify the correct event subscribers.
 
         :return: A message response
         """
-        event_bus.notify(WaterInfoEvent(amount=WaterAmount.HIGH, mop_attached=(str(args["on"]) != "0")))
+        event_bus.notify(
+            WaterInfoEvent(
+                amount=WaterAmount.HIGH, mop_attached=(str(args["on"]) != "0")
+            )
+        )
         return HandlingResult.success()
 
     @classmethod
@@ -72,5 +76,7 @@ class GetWaterBoxInfo(XmlGetCommand):
         if xml.attrib.get("ret") != "ok" or not (on := xml.attrib.get("on")):
             return HandlingResult.analyse()
 
-        event_bus.notify(WaterInfoEvent(amount=WaterAmount.HIGH, mop_attached=on != "0"))
+        event_bus.notify(
+            WaterInfoEvent(amount=WaterAmount.HIGH, mop_attached=on != "0")
+        )
         return HandlingResult.success()
