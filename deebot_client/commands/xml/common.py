@@ -3,12 +3,18 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 from xml.etree.ElementTree import Element, SubElement
 
 from defusedxml import ElementTree  # type: ignore[import-untyped]
 
-from deebot_client.command import Command, CommandWithMessageHandling, SetCommand
+from deebot_client.command import (
+    Command,
+    CommandMqttP2P,
+    CommandWithMessageHandling,
+    GetCommand,
+    SetCommand,
+)
 from deebot_client.const import DataType
 from deebot_client.logging_filter import get_logger
 from deebot_client.message import HandlingResult, HandlingState, MessageStr
@@ -81,8 +87,52 @@ class ExecuteCommand(XmlCommandWithMessageHandling, ABC):
         return HandlingResult(HandlingState.FAILED)
 
 
-class XmlSetCommand(ExecuteCommand, SetCommand, ABC):
+class XmlCommandMqttP2P(XmlCommand, CommandMqttP2P, ABC):
+    """Json base command for mqtt p2p channel."""
+
+    @classmethod
+    def create_from_mqtt(cls, payload: str | bytes | bytearray) -> CommandMqttP2P:
+        """Create a command from the mqtt data."""
+        xml = ElementTree.fromstring(payload)
+        return cls._create_from_mqtt(xml.attrib)
+
+    def handle_mqtt_p2p(
+        self, event_bus: EventBus, response_payload: str | bytes | bytearray
+    ) -> None:
+        """Handle response received over the mqtt channel "p2p"."""
+        if isinstance(response_payload, bytearray):
+            data = bytes(response_payload).decode()
+        elif isinstance(response_payload, bytes):
+            data = response_payload.decode()
+        elif isinstance(response_payload, str):
+            data = response_payload
+        else:
+            msg = "Unsupported message data type {message_type}"
+            raise TypeError(
+                msg.format(essage_type=type(response_payload))
+            )
+        self._handle_mqtt_p2p(event_bus, data)
+
+    @abstractmethod
+    def _handle_mqtt_p2p(
+        self, event_bus: EventBus, response: dict[str, Any] | str
+    ) -> None:
+        """Handle response received over the mqtt channel "p2p"."""
+
+
+class XmlSetCommand(ExecuteCommand, SetCommand, XmlCommandMqttP2P, ABC):
     """Xml base set command.
 
     Command needs to be linked to the "get" command, for handling (updating) the sensors.
     """
+
+
+class XmlGetCommand(XmlCommandWithMessageHandling, GetCommand, ABC):
+    """Xml get command."""
+
+    @classmethod
+    @abstractmethod
+    def handle_set_args(
+        cls, event_bus: EventBus, args: dict[str, Any]
+    ) -> HandlingResult:
+        """Handle arguments of set command."""

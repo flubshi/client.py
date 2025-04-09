@@ -14,6 +14,7 @@ from deebot_client.mqtt_client import MqttClient, SubscriberInfo
 from deebot_client.util import cancel
 
 from .command import Command
+from .const import DataType
 from .event_bus import EventBus
 from .events import (
     AvailabilityEvent,
@@ -38,7 +39,6 @@ if TYPE_CHECKING:
 _LOGGER = get_logger(__name__)
 _AVAILABLE_CHECK_INTERVAL = 60
 
-
 DeviceCommandExecute = Callable[[Command], Coroutine[Any, Any, dict[str, Any]]]
 
 
@@ -46,9 +46,9 @@ class Device:
     """Device representation."""
 
     def __init__(
-        self,
-        device_info: DeviceInfo,
-        authenticator: Authenticator,
+            self,
+            device_info: DeviceInfo,
+            authenticator: Authenticator,
     ) -> None:
         self._device_info = device_info
         self.device_info: Final = device_info.api
@@ -78,8 +78,8 @@ class Device:
             if deebot:
                 on_charger = filter(
                     lambda p: p.type == PositionType.CHARGER
-                    and p.x == deebot.x
-                    and p.y == deebot.y,
+                              and p.x == deebot.x
+                              and p.y == deebot.y,
                     event.positions,
                 )
                 if on_charger:
@@ -146,12 +146,12 @@ class Device:
     async def _available_task_worker(self) -> None:
         while True:
             if (datetime.now() - self._last_time_available).total_seconds() > (
-                _AVAILABLE_CHECK_INTERVAL - 1
+                    _AVAILABLE_CHECK_INTERVAL - 1
             ):
                 tasks: set[asyncio.Future[Any]] = set()
                 try:
                     for command in self.capabilities.get_refresh_commands(
-                        AvailabilityEvent
+                            AvailabilityEvent
                     ):
                         tasks.add(asyncio.create_task(self._execute_command(command)))
 
@@ -166,8 +166,8 @@ class Device:
             await asyncio.sleep(_AVAILABLE_CHECK_INTERVAL)
 
     async def _execute_command(
-        self,
-        command: Command,
+            self,
+            command: Command,
     ) -> DeviceCommandResult:
         """Execute given command."""
         async with self._semaphore:
@@ -187,7 +187,7 @@ class Device:
         self.events.notify(AvailabilityEvent(available=available))
 
     def _handle_message(
-        self, message_name: str, message_data: str | bytes | bytearray | dict[str, Any]
+            self, message_name: str, message_data: str | bytes | bytearray | dict[str, Any]
     ) -> None:
         """Handle the given message.
 
@@ -200,15 +200,28 @@ class Device:
         try:
             _LOGGER.debug("Try to handle message %s: %s", message_name, message_data)
 
-            if message := get_message(message_name, self._device_info.static.data_type):
+            message_data_type = self._device_info.static.data_type
+            if message := get_message(message_name, message_data_type):
                 if isinstance(message_data, dict):
                     data = message_data
-                else:
+                elif message_data_type == DataType.JSON:
                     data = json.loads(message_data)
+                elif isinstance(message_data, bytes):
+                    data = message_data.decode()
+                elif isinstance(message_data, bytearray):
+                    data = bytes(message_data).decode()
+                elif isinstance(message_data, str):
+                    data = message_data
+                else:
+                    msg = "Unsupported message data type {message_name}: {message_type}"
+                    raise TypeError(
+                        msg.format(message_name=message_name, message_type=type(message_data))
+                    )
 
-                fw_version = data.get("header", {}).get("fwVer", None)
-                if fw_version:
-                    self.fw_version = fw_version
+                if isinstance(data, dict):
+                    fw_version = data.get("header", {}).get("fwVer", None)
+                    if fw_version:
+                        self.fw_version = fw_version
 
                 message.handle(self.events, data)
         except Exception:  # pylint: disable=broad-except
