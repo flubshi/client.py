@@ -6,35 +6,71 @@ from typing import TYPE_CHECKING
 
 from deebot_client.command import Command, CommandMqttP2P
 
+from .battery import GetBatteryInfo
 from .charge import Charge
 from .charge_state import GetChargeState
+from .clean import Clean, CleanArea, GetCleanState
+from .clean_logs import GetCleanLogs
 from .error import GetError
-from .fan_speed import GetFanSpeed
+from .fan_speed import GetCleanSpeed, SetCleanSpeed
 from .life_span import GetLifeSpan
+from .map import GetMapM, GetMapSet, GetMapSt, PullM, PullMP
 from .play_sound import PlaySound
 from .pos import GetPos
 from .stats import GetCleanSum
+from .water_info import GetWaterBoxInfo, GetWaterPermeability
 
 if TYPE_CHECKING:
     from .common import XmlCommand
 
 __all__ = [
     "Charge",
+    "Clean",
+    "CleanArea",
+    "GetBatteryInfo",
     "GetChargeState",
+    "GetCleanLogs",
+    "GetCleanSpeed",
+    "GetCleanState",
     "GetCleanSum",
     "GetError",
-    "GetFanSpeed",
     "GetLifeSpan",
+    "GetMapM",
+    "GetMapSet",
+    "GetMapSt",
     "GetPos",
+    "GetWaterBoxInfo",
+    "GetWaterPermeability",
     "PlaySound",
+    "PullM",
+    "PullMP",
+    "SetCleanSpeed",
 ]
 
 # fmt: off
 # ordered by file asc
 _COMMANDS: list[type[XmlCommand]] = [
+    Charge,
+    Clean,
+    CleanArea,
+    GetBatteryInfo,
+    GetChargeState,
+    GetCleanLogs,
+    GetCleanSpeed,
+    GetCleanState,
+    GetCleanSum,
     GetError,
     GetLifeSpan,
+    GetMapM,
+    GetMapSet,
+    GetMapSt,
+    GetPos,
+    GetWaterBoxInfo,
+    GetWaterPermeability,
     PlaySound,
+    PullM,
+    PullMP,
+    SetCleanSpeed,
 ]
 # fmt: on
 
